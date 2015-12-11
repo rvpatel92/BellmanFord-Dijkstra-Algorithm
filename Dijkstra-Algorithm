@@ -1,0 +1,115 @@
+package bellman2;
+
+import java.util.PriorityQueue;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+
+class Vertex implements Comparable<Vertex>
+{
+    public final String name;
+    public Edge[] adjacen;
+    public double minDistance = Double.POSITIVE_INFINITY;
+    public Vertex prev;
+    public Vertex(String argName) { name = argName; }
+    public String toString() { return name; }
+    public int compareTo(Vertex other)
+    {
+        return Double.compare(minDistance, other.minDistance);
+    }
+}
+class Edge
+{
+    public final Vertex target;
+    public final double weight;
+    public Edge(Vertex argTarget, double argWeight)
+    { target = argTarget; weight = argWeight; }
+}
+
+public class Algorithms
+{
+    public static void computePaths(Vertex source)
+    {
+        source.minDistance = 0.;
+        PriorityQueue<Vertex> vertexQueue = new PriorityQueue<Vertex>();
+	vertexQueue.add(source);
+
+	while (!vertexQueue.isEmpty()) {
+	    Vertex u = vertexQueue.poll();
+
+            // Visit each edge exiting u
+            for (Edge e : u.adjacen)
+            {
+                Vertex v = e.target;
+                double weight = e.weight;
+                double distanceThroughU = u.minDistance + weight;
+		if (distanceThroughU < v.minDistance) {
+		    vertexQueue.remove(v);
+
+		    v.minDistance = distanceThroughU ;
+		    v.prev = u;
+		    vertexQueue.add(v);
+		}
+            }
+        }
+	
+    }
+    public static List<Vertex> getShortestPathTo(Vertex target)
+    {
+        List<Vertex> path = new ArrayList<Vertex>();
+        for (Vertex vertex = target; vertex != null; vertex = vertex.prev)
+            path.add(vertex);
+
+        Collections.reverse(path);
+        return path;
+    }
+
+
+    public static void main(String[] args)
+    {
+    System.out.println("----------Dijkstra's Routing Algorithm Below: ----------");
+	System.out.println();
+    Vertex v1 = new Vertex("R1");
+	Vertex v2 = new Vertex("R2");
+	Vertex v3 = new Vertex("R3");
+	Vertex v4 = new Vertex("R4");
+	Vertex v5 = new Vertex("R5");
+	Vertex v6 = new Vertex("R6");
+	v1.adjacen = new Edge[]{ new Edge(v2,  2),
+	                             new Edge(v3,  4),
+	                             new Edge(v4,  1) };
+	v2.adjacen = new Edge[]{ new Edge(v1,  2),
+								 new Edge(v6,  4)};
+	v3.adjacen = new Edge[]{ new Edge(v1,  4),
+	                             new Edge(v4,  2),
+	                             new Edge(v5,  4) };
+	v4.adjacen = new Edge[]{ new Edge(v1,  1), 
+								 new Edge(v3,  2),
+								 new Edge(v6,  2)};
+	v5.adjacen = new Edge[]{ new Edge(v6,  3),
+	                             new Edge(v3,  4),};
+	v6.adjacen = new Edge[]{ new Edge(v2,  4),
+								 new Edge(v4,  2),
+	                             new Edge(v5,  3) };
+	Vertex[] vertices = { v1, v2, v3, v4, v6, v5};
+
+        computePaths(v5);
+        double timetotal = 0;
+        for (Vertex v : vertices)
+	{
+	    System.out.println("Distance from R5 to " + v + ": " + v.minDistance);
+    	long start_time = System.nanoTime();
+	    List<Vertex> path = getShortestPathTo(v);
+    	long end_time = System.nanoTime();
+	    System.out.println("Path: " + path);
+    	double difference = (end_time - start_time)/1e6;
+	    System.out.println("Performance for each route: " + difference + " milliseconds.");
+	    System.out.println();
+	    timetotal = (timetotal + difference);
+	}
+        System.out.println("Total time of performance: "+ timetotal + " milliseconds.");
+	    System.out.println();
+        System.out.println("----------Dijkstra's Routing Algorithm Above: ----------");
+
+    }
+}
