@@ -1,0 +1,140 @@
+package bellmanford;
+
+class Vertex implements Comparable<Vertex>
+{
+	public final String name;
+	public Edge[] adjacencies;
+	public double minDistance;
+	public Vertex(String argName) { name = argName; }
+	public String toString() { return name; }
+	public int compareTo(Vertex other)
+	{
+		return Double.compare(minDistance, other.minDistance);
+	}
+}
+
+class Edge
+{
+	public final Vertex target;
+	public final double weight;
+	public Edge(Vertex argTarget, double argWeight)
+	{ target = argTarget; weight = argWeight; }
+}
+
+public class BellmanFord
+{
+	public static void computePaths(Vertex[] vertices, Vertex source)
+	{
+		double[][] d = new double[vertices.length][vertices.length];
+		for(int i = 0; i < vertices.length; i++)
+			for(int j = 0; j < vertices.length; j++)
+				if(i == j)
+					d[i][j] = 0;
+				else
+					d[i][j] = Double.POSITIVE_INFINITY;
+
+		System.out.println("Cost matrix");
+
+		for(int i = 0; i < vertices.length; i++)
+		{
+			for(int j = 0; j < vertices.length; j++)
+			{
+				boolean printed = false;
+				for(int l = 0; l < vertices[i].adjacencies.length; l++)
+					if(vertices[i].adjacencies[l].target.name.compareTo(vertices[j].name)==0)
+					{
+						System.out.print(vertices[i].adjacencies[l].weight + " ");
+						printed = true;
+					}
+				if(!printed)		
+					if(i == j)
+						System.out.print(0 + " ");
+					else
+					{
+						System.out.print(Double.POSITIVE_INFINITY + " ");
+					}
+			}
+			System.out.println();
+		}
+		System.out.println();
+		System.out.println("Distance Matrix: Iteration 1");
+		for(int i = 0; i < vertices.length; i++)
+		{
+			for(int j = 0; j < vertices.length; j++)
+				System.out.print(d[i][j] + " ");
+			System.out.println();
+		}
+		System.out.println();
+		boolean changed = true;
+		int count = 2;
+		while(changed)
+		{
+			changed = false;
+			for(int i = 0; i < vertices.length; i++)
+				for(int j = 0; j < vertices.length; j++)
+					for(int k = 0; k < vertices.length; k++)
+						for(int l = 0; l < vertices[i].adjacencies.length; l++)
+							if(vertices[i].adjacencies[l].target.name.compareTo(vertices[k].name)==0)
+								if(d[i][j] > vertices[i].adjacencies[l].weight + d[k][j])
+								{
+									d[i][j] = vertices[i].adjacencies[l].weight + d[k][j];
+									changed = true;
+								}
+			System.out.println("Distance Matrix: Iteration " + count);
+			for(int i = 0; i < vertices.length; i++)
+			{
+				for(int j = 0; j < vertices.length; j++)
+					System.out.print(d[i][j] + " ");
+				System.out.println();
+			}
+			System.out.println();
+			count++;
+		}
+
+	}
+
+	public static void main(String[] args)
+	{
+	    System.out.println("----------Bellman Ford Routing Algorithm Below: ----------");
+		System.out.println();
+		
+		Vertex[] vertices = new Vertex[6];
+		for(int i = 0; i < 6; i++)
+		{
+			vertices[i] = new Vertex("R" + Integer.toString(i+1));
+		}
+
+		vertices[0].adjacencies = new Edge[3];
+		vertices[0].adjacencies[0] = new Edge(vertices[1], 2);
+		vertices[0].adjacencies[1] = new Edge(vertices[2], 4);
+		vertices[0].adjacencies[2] = new Edge(vertices[3], 1);
+		vertices[1].adjacencies = new Edge[2];
+		vertices[1].adjacencies[0] = new Edge(vertices[0], 2);
+		vertices[1].adjacencies[1] = new Edge(vertices[5], 4);
+		vertices[2].adjacencies = new Edge[3];
+		vertices[2].adjacencies[0] = new Edge(vertices[0], 4);
+		vertices[2].adjacencies[1] = new Edge(vertices[3], 2);
+		vertices[2].adjacencies[2] = new Edge(vertices[4], 4);
+		vertices[3].adjacencies = new Edge[3];
+		vertices[3].adjacencies[0] = new Edge(vertices[0], 1);
+		vertices[3].adjacencies[1] = new Edge(vertices[2], 2);
+		vertices[3].adjacencies[2] = new Edge(vertices[5], 2);
+		vertices[4].adjacencies = new Edge[2];
+		vertices[4].adjacencies[0] = new Edge(vertices[2], 4);
+		vertices[4].adjacencies[1] = new Edge(vertices[5], 3);
+		vertices[5].adjacencies = new Edge[3];
+		vertices[5].adjacencies[0] = new Edge(vertices[1], 4);
+		vertices[5].adjacencies[1] = new Edge(vertices[3], 2);
+		vertices[5].adjacencies[2] = new Edge(vertices[4], 3);
+
+		double timetotal = 0;
+		long start_time = System.nanoTime();
+		BellmanFord.computePaths(vertices, vertices[4]);
+		long end_time = System.nanoTime();
+		double difference = (end_time - start_time) /1e6;
+		timetotal = timetotal + difference;
+		System.out.println("Performance for whole bellman ford iterations: " + timetotal + " milliseconds.");
+		System.out.println();
+		System.out.println("----------Bellman Ford Routing Algorithm Above: ----------");
+	}
+}
